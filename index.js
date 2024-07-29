@@ -1,23 +1,40 @@
+const cluster = require('node:cluster');
+const process = require('node:process');
 const express = require('express');
+const numCPUs = require('os').cpus().length;
+console.log(numCPUs);
+if (cluster.isPrimary) {
+    console.log(`Primary ${process.pid} is running`);
 
-const app = express();
+    // Fork workers.
+    for (let i = 0; i < numCPUs; i++) {
+        cluster.fork();
+    }
 
-const PORT = process.env.PORT || 3000;
+    cluster.on('exit', (worker, code, signal) => {
+        console.log(`worker ${worker.process.pid} died`);
+        cluster.fork();
+    });
+} else {
+    const app = express();
+    // Workers can share any TCP connection
+    // In this case it is an HTTP server
+    app.get('/:n', (req, res) => {
+        console.log(`Worker ${process.pid} handled request`);
+        let sum = 0;
+        for (let i = 0; i < req.params.n; i++) {
+            sum += i;
+        }
+        console.log(sum);
+        res.send(`Hello Worldddd ${process.pid} sum is ${sum}`);
+    });
 
-app.get('/', (req, res) => {
-    res.send('Hello World');
+
+    app.listen(3000, () => {
+        console.log('Server is running by' + process.pid);
+    });
 }
-);
 
-app.get("/todos", () => {
-    res.json([
-        { id: 1, title: "Learn Node.js" },
-        { id: 2, title: "Learn Express.js" },
-        { id: 3, title: "Learn MongoDB" }
-    ]);
-})
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-}
-);
+
+
