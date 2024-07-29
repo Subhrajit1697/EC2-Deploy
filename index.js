@@ -20,17 +20,16 @@ if (cluster.isPrimary) {
     // Workers can share any TCP connection
     // In this case it is an HTTP server
     app.get('/:n', (req, res) => {
-        console.log(`Worker ${process.pid} handled request`);
         let sum = 0;
         for (let i = 0; i < req.params.n; i++) {
             sum += i;
         }
-        console.log(sum);
-        res.send(`Hello Worldddd ${process.pid} sum is ${sum}`);
+        console.log('sum',sum);
+        res.send(`Hello Worldddd.. Your request handled by ${process.pid} and sum is ${sum}`);
     });
 
 
-    app.listen(3000, () => {
+    app.listen(3001, () => {
         console.log('Server is running by' + process.pid);
     });
 }
