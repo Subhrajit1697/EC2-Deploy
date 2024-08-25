@@ -19,6 +19,9 @@ if (cluster.isPrimary) {
     const app = express();
     // Workers can share any TCP connection
     // In this case it is an HTTP server
+    app.get('/', (req, res) => {
+        res.send(`Welcome to Reverse Proxy. Your request handled by ${process.pid}`);
+    })
     app.get('/:n', (req, res) => {
         let sum = 0;
         for (let i = 0; i < req.params.n; i++) {
